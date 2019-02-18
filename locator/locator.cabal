@@ -1,0 +1,62 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.1.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: d8940c6855bb1bb331ca3a6185eee6ed5c4bc59efbebfd8defaf8b5df7e81b03
+
+name:           locator
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/locator#readme>
+homepage:       https://github.com/githubuser/locator#readme
+bug-reports:    https://github.com/githubuser/locator/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2019 Author name here
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/locator
+
+library
+  exposed-modules:
+      Lib
+  other-modules:
+      Paths_locator
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+  default-language: Haskell2010
+
+executable locator-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_locator
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , locator
+  default-language: Haskell2010
+
+test-suite locator-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_locator
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , locator
+  default-language: Haskell2010
