@@ -1,5 +1,6 @@
 module Main where
 
+--import Data.HashMap
 import System.CPUTime
 import System.IO
 
@@ -32,6 +33,10 @@ makeLongString :: Int -> String
 makeLongString count =
   take count $ cycle ['a' .. 'z']
 
+-- TODO
+-- Hash map insertion
+  
+
 main :: IO ()
 main = do
   timing $ simpleComp
@@ -44,6 +49,9 @@ main = do
   let str2 = makeLongString 500000
   timing $ writeComp str2
 
+  let str3 = makeLongString 50000000
+  timing $ writeComp str3
+
 
 --------------------------------------------------
 -- Sample run
@@ -55,3 +63,4 @@ main = do
 -- Time: 0.485 msec.
 -- Time: 0.585 msec.
 -- Time: 40.243 msec.
+-- Time: 1907.859 msec.
