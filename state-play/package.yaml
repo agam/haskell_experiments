@@ -21,6 +21,7 @@ description:         Please see the README on GitHub at <https://github.com/agam
 
 dependencies:
 - base >= 4.7 && < 5
+- random
 
 library:
   source-dirs: src
@@ -35,6 +36,8 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - state-play
+    - containers
+    - split
 
 tests:
   state-play-test:
