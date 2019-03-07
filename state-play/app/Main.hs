@@ -3,6 +3,7 @@ module Main where
 import Control.Monad (replicateM)
 import Data.List.Split
 import qualified Data.Map as M
+import qualified Data.HashMap.Lazy as HML
 import System.CPUTime
 import System.IO
 import System.Random
@@ -64,8 +65,16 @@ mapComp kvpairs = do
         ins (k, v) t = M.insert k v t
   if M.size m /= length kvpairs
   then putStrLn $ "FAIL: " ++ show (M.size m) ++ ", " ++ show (length kvpairs)
-  else pure $ ()
+  else pure ()
 
+hashmapComp :: KVPairs -> IO()
+hashmapComp kvpairs = do
+  let init = HML.empty
+  let m = foldr ins init kvpairs where
+        ins (k, v) t = HML.insert k v t
+  if HML.size m /= length kvpairs
+  then putStrLn $ "Fail: " ++ show (HML.size m) ++ ", " ++ show (length kvpairs)
+  else pure ()
 
 testWrites = do
   let str1 = makeLongString 5000
@@ -92,13 +101,29 @@ testMap = do
   timing $ mapComp kvp3
   
 
+testHashMap = do
+  kvp1 <- makeKVPairs 100
+  timing $ hashmapComp kvp1
+
+  kvp2 <- makeKVPairs 10000
+  timing $ hashmapComp kvp2
+
+  kvp3 <- makeKVPairs 100000
+  timing $ hashmapComp kvp3
+
+
 main :: IO ()
 main = do
   timing $ simpleComp
 
-  _ <- testWrites
+  putStrLn "\nFile write tests"
+  testWrites
 
-  _ <- testMap
+  putStrLn "\nMap write tests"
+  testMap
+
+  putStrLn "\nHashmap (lazy) write tests"
+  testHashMap
 
   pure ()
 

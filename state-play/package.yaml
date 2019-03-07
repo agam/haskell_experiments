@@ -38,6 +38,7 @@ executables:
     - state-play
     - containers
     - split
+    - unordered-containers
 
 tests:
   state-play-test:
