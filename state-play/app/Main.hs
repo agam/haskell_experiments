@@ -4,6 +4,7 @@ import Control.Monad (replicateM)
 import Data.List.Split
 import qualified Data.Map as M
 import qualified Data.HashMap.Lazy as HML
+import qualified Data.HashMap.Strict as HMS
 import System.CPUTime
 import System.IO
 import System.Random
@@ -67,14 +68,20 @@ mapComp kvpairs = do
   then putStrLn $ "FAIL: " ++ show (M.size m) ++ ", " ++ show (length kvpairs)
   else pure ()
 
-hashmapComp :: KVPairs -> IO()
-hashmapComp kvpairs = do
-  let init = HML.empty
+hashmapComp :: Bool -> KVPairs -> IO()
+hashmapComp isStrict kvpairs = do
+  -- Need to parameterise some hashmap calls
+  let emptyFn = if isStrict then HMS.empty else HML.empty
+  let insertFn = if isStrict then HMS.insert else HML.insert
+  let sizeFn = if isStrict then HMS.size else HML.size
+
+  let init = emptyFn
   let m = foldr ins init kvpairs where
-        ins (k, v) t = HML.insert k v t
-  if HML.size m /= length kvpairs
-  then putStrLn $ "Fail: " ++ show (HML.size m) ++ ", " ++ show (length kvpairs)
+        ins (k, v) t = insertFn k v t
+  if sizeFn m /= length kvpairs
+  then putStrLn $ "Fail: " ++ show (sizeFn m) ++ ", " ++ show (length kvpairs)
   else pure ()
+
 
 testWrites = do
   let str1 = makeLongString 5000
@@ -101,15 +108,15 @@ testMap = do
   timing $ mapComp kvp3
   
 
-testHashMap = do
+testHashMap isStrict = do
   kvp1 <- makeKVPairs 100
-  timing $ hashmapComp kvp1
+  timing $ hashmapComp isStrict kvp1
 
   kvp2 <- makeKVPairs 10000
-  timing $ hashmapComp kvp2
+  timing $ hashmapComp isStrict kvp2
 
   kvp3 <- makeKVPairs 100000
-  timing $ hashmapComp kvp3
+  timing $ hashmapComp isStrict kvp3
 
 
 main :: IO ()
@@ -123,7 +130,10 @@ main = do
   testMap
 
   putStrLn "\nHashmap (lazy) write tests"
-  testHashMap
+  testHashMap False
+
+  putStrLn "\nHashmap (strict) write tests"
+  testHashMap True
 
   pure ()
 
@@ -134,12 +144,25 @@ main = do
 
 -- > $ stack exec -- state-play-exe                                                                   
 -- Hello World
--- Time: 0.326 msec.
--- Time: 0.368 msec.
--- Time: 0.477 msec.
--- Time: 32.499 msec.
--- Time: 204.347 msec.
--- Time: 472.092 msec.
--- Time: 3.744 msec.
--- Time: 346.244 msec.
--- Time: 4130.675 msec.
+-- Time: 0.312 msec.
+
+-- File write tests
+-- Time: 1.399 msec.
+-- Time: 43.844 msec.
+-- Time: 198.542 msec.
+-- Time: 394.335 msec.
+
+-- Map write tests
+-- Time: 3.06 msec.
+-- Time: 339.551 msec.
+-- Time: 3898.309 msec.
+
+-- Hashmap (lazy) write tests
+-- Time: 3.997 msec.
+-- Time: 442.385 msec.
+-- Time: 5325.372 msec.
+
+-- Hashmap (strict) write tests
+-- Time: 14.583 msec.
+-- Time: 450.123 msec.
+-- Time: 5986.775 msec.
