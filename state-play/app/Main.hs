@@ -59,27 +59,25 @@ makeKVPairs count = do
 
 
 -- Basic map insertion
-mapComp :: KVPairs -> IO ()
-mapComp kvpairs = do
-  let init = M.empty
-  let m = foldr ins init kvpairs where
-        ins (k, v) t = M.insert k v t
-  if M.size m /= length kvpairs
-  then putStrLn $ "FAIL: " ++ show (M.size m) ++ ", " ++ show (length kvpairs)
-  else pure ()
+data MapOps m = MapOps
+  {
+    empty :: m
+  , insert :: String -> Int -> m -> m
+  , size :: m -> Int
+  }
 
-hashmapComp :: Bool -> KVPairs -> IO()
-hashmapComp isStrict kvpairs = do
-  -- Need to parameterise some hashmap calls
-  let emptyFn = if isStrict then HMS.empty else HML.empty
-  let insertFn = if isStrict then HMS.insert else HML.insert
-  let sizeFn = if isStrict then HMS.size else HML.size
 
-  let init = emptyFn
+plainOps = MapOps M.empty M.insert M.size
+hashmapLazyOps = MapOps HML.empty HML.insert HML.size
+hashmapStrictOps = MapOps HMS.empty HMS.insert HML.size
+
+mapComp :: KVPairs -> MapOps m -> IO ()
+mapComp kvpairs mapops = do
+  let init = empty mapops
   let m = foldr ins init kvpairs where
-        ins (k, v) t = insertFn k v t
-  if sizeFn m /= length kvpairs
-  then putStrLn $ "Fail: " ++ show (sizeFn m) ++ ", " ++ show (length kvpairs)
+        ins (k, v) t = (insert mapops) k v t
+  if (size mapops) m /= length kvpairs
+  then putStrLn $ "FAIL: " ++ show ((size mapops) m) ++ ", " ++ show (length kvpairs)
   else pure ()
 
 
@@ -99,24 +97,26 @@ testWrites = do
 
 testMap = do
   kvp1 <- makeKVPairs 100
-  timing $ mapComp kvp1
+  timing $ mapComp kvp1 plainOps
 
   kvp2 <- makeKVPairs 10000
-  timing $ mapComp kvp2
+  timing $ mapComp kvp2 plainOps
 
   kvp3 <- makeKVPairs 100000
-  timing $ mapComp kvp3
+  timing $ mapComp kvp3 plainOps
   
 
 testHashMap isStrict = do
+  let mapops = if isStrict then hashmapStrictOps else hashmapLazyOps
+
   kvp1 <- makeKVPairs 100
-  timing $ hashmapComp isStrict kvp1
+  timing $ mapComp kvp1 mapops
 
   kvp2 <- makeKVPairs 10000
-  timing $ hashmapComp isStrict kvp2
+  timing $ mapComp kvp2 mapops
 
   kvp3 <- makeKVPairs 100000
-  timing $ hashmapComp isStrict kvp3
+  timing $ mapComp kvp3 mapops
 
 
 main :: IO ()
